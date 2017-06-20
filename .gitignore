@@ -1,5 +1,13 @@
 
-# Created by https://www.gitignore.io/api/macos,symfony,windows,phpstorm
+# Created by https://www.gitignore.io/api/macos,symfony,windows,composer,phpstorm
+
+### Composer ###
+composer.phar
+/vendor/
+
+# Commit your application's lock file http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file
+# You may choose to ignore a library lock file http://getcomposer.org/doc/02-libraries.md#lock-file
+# composer.lock
 
 ### macOS ###
 *.DS_Store
@@ -158,4 +166,4 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 
-# End of https://www.gitignore.io/api/macos,symfony,windows,phpstorm
+# End of https://www.gitignore.io/api/macos,symfony,windows,composer,phpstorm
