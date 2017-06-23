@@ -6,7 +6,8 @@ use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
-
+use Symfony\Component\Serializer\Annotation\Groups;
+use Parsedown;
 
 /**
  * A blog post.
@@ -14,7 +15,11 @@ use Symfony\Component\Validator\Constraints as Assert;
  * @see http://schema.org/Article Documentation on Schema.org
  *
  * @ORM\Entity
- * @ApiResource(iri="http://schema.org/Article")
+ * @ORM\HasLifecycleCallbacks
+ * @ApiResource(
+ *     iri="http://schema.org/Article",
+ *     attributes={"normalization_context"={"groups"={"postView"}}}
+ * )
  */
 class Post
 {
@@ -24,6 +29,7 @@ class Post
      * @ORM\Column(type="integer")
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="AUTO")
+     * @Groups({"postView"})
      */
     private $id;
 
@@ -34,16 +40,26 @@ class Post
      * @Assert\NotBlank
      * @ORM\Column(type="string", length=255)
      * @ApiProperty(iri="http://schema.org/name")
+     * @Groups({"postView"})
      */
     private $title;
 
     /**
-     * @var string The body of the post
+     * @var string The markdown-formatted body of the post
+     *
+     * @Assert\NotBlank
+     * @Assert\Type(type="string")
+     * @ORM\Column(type="text")
+     */
+    private $markdownBody;
+
+    /**
+     * @var string The body of the post (HTML format, generated from markdown)
      *
      * @Assert\Type(type="string")
-     * @Assert\NotBlank
      * @ORM\Column(type="text")
      * @ApiProperty(iri="http://schema.org/articleBody")
+     * @Groups({"postView"})
      */
     private $body;
 
@@ -54,6 +70,7 @@ class Post
      * @Assert\NotNull
      * @ORM\Column(type="datetime")
      * @ApiProperty(iri="http://schema.org/dateCreated")
+     * @Groups({"postView"})
      */
     private $publicationDate;
 
@@ -61,6 +78,7 @@ class Post
      * @var User The author of the post.
      *
      * @ORM\ManyToOne(targetEntity="User")
+     * @Groups({"postView"})
      */
     private $author;
 
@@ -107,7 +125,30 @@ class Post
     {
         return $this->title;
     }
-    
+
+    /**
+     * Sets markdown body.
+     *
+     * @param string $markdownBody
+     *
+     * @return $this
+     */
+    public function setMarkdownBody($markdownBody)
+    {
+        $this->markdownBody = $markdownBody;
+        return $this;
+    }
+
+    /**
+     * Gets markdown body.
+     *
+     * @return string
+     */
+    public function getMarkdownBody()
+    {
+        return $this->markdownBody;
+    }
+
     /**
      * Sets body.
      *
@@ -175,4 +216,23 @@ class Post
     {
         return $this->author;
     }
+
+    /**
+     * Generate the HTML body using markdown body
+     * Called each time the row is updated / inserted
+     *
+     * @return Post
+     *
+     * @ORM\PrePersist
+     * @ORM\PreUpdate
+     */
+    public function generateHTML()
+    {
+        // TODO re-generate HTML only if markdown has changed
+        $parsedown = new Parsedown();
+        $this->setBody($parsedown->text($this->getMarkdownBody()));
+
+        return $this;
+    }
+
 }

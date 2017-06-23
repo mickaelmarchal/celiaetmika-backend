@@ -6,6 +6,7 @@ use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 
 /**
@@ -24,6 +25,7 @@ class User
      * @ORM\Column(type="integer")
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="AUTO")
+     * @Groups({"postView"})
      */
     private $id;
 
@@ -41,6 +43,7 @@ class User
      *
      * @ORM\Column(type="string", length=50, unique=true, nullable=false)
      * @ApiProperty(iri="http://schema.org/additionalName")
+     * @Groups({"postView"})
      */
     private $displayName;
 

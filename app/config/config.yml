@@ -79,3 +79,10 @@ nelmio_cors:
         max_age:        3600
     paths:
         '^/': ~
+
+api_platform:
+
+    title: 'celiaetmika.com API'
+    description: 'API for our personal blog.'
+    version: '0.0.1'
+    default_operation_path_resolver: 'api_platform.operation_path_resolver.dash'
