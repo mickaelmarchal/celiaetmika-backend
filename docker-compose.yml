@@ -16,3 +16,5 @@ database:
         MYSQL_DATABASE: api_platform
         MYSQL_USER: api_platform
         MYSQL_PASSWORD: api_platform
+    ports:
+        - 3306:3306

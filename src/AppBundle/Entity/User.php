@@ -4,6 +4,7 @@ namespace AppBundle\Entity;
 
 use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Serializer\Annotation\Groups;
@@ -54,6 +55,25 @@ class User
      */
     private $creationDate;
 
+    /**
+     * @var ArrayCollection Groups for the User.
+     *
+     * @ORM\ManyToMany(targetEntity="UserGroup")
+     * @ORM\JoinTable(
+     *     name="users_groups",
+     *     joinColumns={@ORM\JoinColumn(name="user_id", referencedColumnName="id")},
+     *     inverseJoinColumns={@ORM\JoinColumn(name="group_id", referencedColumnName="id")}
+     * )
+     */
+    private $groups;
+
+
+    /**
+     * User constructor.
+     */
+    public function __construct() {
+        $this->groups = new ArrayCollection();
+    }
 
     /**
      * Sets id.
@@ -82,7 +102,6 @@ class User
      * Sets email.
      *
      * @param string $email
-     *
      * @return $this
      */
     public function setEmail(string $email)
@@ -105,10 +124,12 @@ class User
      * Set display name.
      *
      * @param string $displayName
+     * @return User
      */
     public function setDisplayName(string $displayName)
     {
         $this->displayName = $displayName;
+        return $this;
     }
 
     /**
@@ -125,10 +146,12 @@ class User
      * Set creation date.
      *
      * @param \DateTime $creationDate
+     * @return User
      */
     public function setCreationDate(\DateTime $creationDate)
     {
         $this->creationDate = $creationDate;
+        return $this;
     }
 
     /**
