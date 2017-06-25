@@ -33,7 +33,9 @@
         "dunglas/action-bundle": "^0.3",
         "nelmio/cors-bundle": "^1.4",
         "phpdocumentor/reflection-docblock": "^3.0",
-        "erusev/parsedown": "^1.6"
+        "erusev/parsedown": "^1.6",
+        "lexik/jwt-authentication-bundle": "^2.4",
+        "gfreeau/get-jwt-bundle": "2.0.x-dev"
     },
     "require-dev": {
         "api-platform/schema-generator": "^1.2",

@@ -6,6 +6,8 @@ use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Security\Core\Encoder\BCryptPasswordEncoder;
+use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Serializer\Annotation\Groups;
 
@@ -16,9 +18,16 @@ use Symfony\Component\Serializer\Annotation\Groups;
  * @see http://schema.org/Person Documentation on Schema.org
  *
  * @ORM\Entity
- * @ApiResource(iri="http://schema.org/Person")
+ * @ORM\HasLifecycleCallbacks
+ * @ApiResource(
+ *     iri="http://schema.org/Person",
+ *     attributes={
+ *         "normalization_context"={"groups"={"user", "userRead"}},
+ *         "denormalization_context"={"groups"={"user", "userWrite"}
+ *     }
+ * }))
  */
-class User
+class User implements UserInterface
 {
     /**
      * @var int
@@ -26,7 +35,7 @@ class User
      * @ORM\Column(type="integer")
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="AUTO")
-     * @Groups({"postView"})
+     * @Groups({"user", "postView"})
      */
     private $id;
 
@@ -36,15 +45,34 @@ class User
      * @Assert\Type(type="string")
      * @ORM\Column(type="string", length=255, unique=true, nullable=false)
      * @ApiProperty(iri="http://schema.org/email")
+     * @Groups({"user"})
      */
     private $email;
+
+    /**
+     * @var string User password
+     *
+     * @Assert\Type(type="string")
+     * @ORM\Column(type="string", length=64)
+     */
+    private $password;
+
+    /**
+     * @var string User password, as plain text
+     * Only used to set the password, not persisted
+     *
+     * @Assert\Type(type="string")
+     * @Groups({"userWrite"})
+     */
+    private $plaintextPassword;
+
 
     /**
      * @var string User display name
      *
      * @ORM\Column(type="string", length=50, unique=true, nullable=false)
      * @ApiProperty(iri="http://schema.org/additionalName")
-     * @Groups({"postView"})
+     * @Groups({"user", "postView"})
      */
     private $displayName;
 
@@ -52,6 +80,7 @@ class User
      * @var \DateTime User creation date
      *
      * @ORM\Column(type="datetime", nullable=false)
+     * @Groups({"userRead"})
      */
     private $creationDate;
 
@@ -121,6 +150,48 @@ class User
     }
 
     /**
+     * Set encoded password.
+     *
+     * @param string $password
+     * @return User
+     */
+    public function setPassword(string $password)
+    {
+        $this->password = $password;
+        return $this;
+    }
+
+    /**
+     * Get encoded password.
+     * @return string
+     */
+    public function getPassword()
+    {
+        return $this->password;
+    }
+
+    /**
+     * Set plain text password.
+     *
+     * @param string $plaintextPassword
+     * @return User
+     */
+    public function setPlaintextPassword(string $plaintextPassword)
+    {
+        $this->plaintextPassword = $plaintextPassword;
+        return $this;
+    }
+
+    /**
+     * Get plain text password.
+     * @return string
+     */
+    public function getPlaintextPassword()
+    {
+        return $this->plaintextPassword;
+    }
+
+    /**
      * Set display name.
      *
      * @param string $displayName
@@ -162,6 +233,77 @@ class User
     public function getCreationDate() : \DateTime
     {
         return $this->creationDate;
+    }
+
+    /**
+     * Get username of user (= email)
+     * @return mixed
+     */
+    public function getUsername()
+    {
+        return $this->email;
+    }
+
+    /**
+     * Get salt for user password.
+     * @return null
+     */
+    public function getSalt()
+    {
+        // no salt necessary, using bcrypt
+        return null;
+    }
+
+    /**
+     * Get roles of user
+     * @return array
+     */
+    public function getRoles()
+    {
+        return array('ROLE_USER');
+    }
+
+    /**
+     * Erase user credentials
+     */
+    public function eraseCredentials()
+    {
+        $this->plaintextPassword = null;
+    }
+
+
+    /**
+     * Encode the password if plainText password is provided.
+     *
+     * @return User
+     *
+     * @ORM\PrePersist
+     * @ORM\PreUpdate
+     */
+    public function encodePassword()
+    {
+        if ($this->getPlaintextPassword()) {
+            $encoder = new BCryptPasswordEncoder(12);
+            $encoded = $encoder->encodePassword($this->getPlaintextPassword(), $this->getSalt());
+            $this->setPassword($encoded);
+            $this->eraseCredentials();
+        }
+
+        return $this;
+    }
+
+    /**
+     * Set creation date of User.
+     *
+     * @return User
+     *
+     * @ORM\PrePersist
+     */
+    public function generateCreationDate()
+    {
+        $this->setCreationDate(new \DateTime());
+
+        return $this;
     }
 
 }
