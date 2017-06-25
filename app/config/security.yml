@@ -16,7 +16,7 @@ security:
             security: false
 
         login:
-            pattern:  ^/api/login$
+            pattern:  ^/auth$
             stateless: true
             anonymous: true
             gfreeau_get_jwt:

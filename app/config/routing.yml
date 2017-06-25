@@ -6,5 +6,5 @@ app:
     resource: '@AppBundle/Action/'
     type:     'annotation'
 
-api_login_check:
-    path: /api/login
+auth_login:
+    path: /auth
