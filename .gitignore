@@ -1,3 +1,8 @@
+### App-specific ###
+
+/var/jwt/*.pem
+
+#############
 
 # Created by https://www.gitignore.io/api/macos,symfony,windows,composer,phpstorm
 
