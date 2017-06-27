@@ -11,5 +11,8 @@ else
 fi
 
 # Start Apache with the right permissions after removing pre-existing PID file
-rm -f /var/run/apache2/apache2.pid
-exec docker/apache/start_safe_perms -DFOREGROUND
+# REMOVED, does not work with Docker for Windows
+# rm -f /var/run/apache2/apache2.pid
+# exec docker/apache/start_safe_perms -DFOREGROUND
+
+exec apache2-foreground
